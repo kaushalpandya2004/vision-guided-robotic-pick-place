@@ -38,6 +38,24 @@ HOME = np.array([
     0.785398163,
 ])
 
+# Verified IK solutions from the validated Stage-7/Stage-8 solution set.
+# Used only as deterministic seed candidates for plate-approach IK.
+VERIFIED_IK = {
+    "A": np.deg2rad([
+        89.129, -104.367, 60.777, -100.784,
+        96.725, 44.546, 32.686
+    ]),
+    "B": np.deg2rad([
+        37.575, -69.575, 68.747, -149.141,
+        61.683, 97.200, 6.381
+    ]),
+    "C": np.deg2rad([
+        127.420, -98.958, 67.210, -129.800,
+        78.204, 52.208, 30.793
+    ]),
+}
+
+
 
 OBJECTS = {
     "A": {
@@ -1865,6 +1883,21 @@ class MotionPlanningNode(Node):
                 HOME,
             )
 
+            # Red has a verified object IK configuration but its
+            # full-orientation pre-grasp IK can fail at Z=0.18.
+            # Use position-only IK only as a Red-specific fallback.
+            if approach_q is None and selected == "A":
+
+                approach_q = self.solve_ik_position_only(
+                    approach_target,
+                    VERIFIED_IK["A"],
+                )
+
+                if approach_q is not None:
+                    self.get_logger().info(
+                        "RED APPROACH: position-only IK fallback PASS"
+                    )
+
             if approach_q is None:
 
                 raise RuntimeError(
@@ -1994,7 +2027,7 @@ class MotionPlanningNode(Node):
                 0.25,
             ])
 
-            lift_q = self.solve_ik(
+            lift_q = self.solve_ik_position_only(
                 lift_target,
                 self.get_arm_q(),
             )
@@ -2048,22 +2081,8 @@ class MotionPlanningNode(Node):
 
             current_q = self.get_arm_q().copy()
 
-            # Green has a difficult post-lift configuration.
-            # Approach the plate from a higher Z first, then descend
-            # vertically to the release position.
             if self.selected_object == "C":
-                plate_approach_heights = [
-                    0.45,
-                    0.42,
-                    0.40,
-                    0.37,
-                    0.35,
-                    0.32,
-                    0.30,
-                    0.28,
-                    0.25,
-                ]
-            else:
+
                 plate_approach_heights = [
                     PLATE_APPROACH_Z,
                     0.22,
@@ -2071,55 +2090,118 @@ class MotionPlanningNode(Node):
                     0.18,
                 ]
 
-            plate_seeds = [
-                current_q.copy(),
-                HOME.copy(),
-            ]
+                plate_seeds = [
+                    ("CURRENT", current_q.copy()),
+                    ("A", VERIFIED_IK["A"].copy()),
+                    ("B", VERIFIED_IK["B"].copy()),
+                    ("C", VERIFIED_IK["C"].copy()),
+                    ("HOME", HOME.copy()),
+                ]
 
-            for plate_z in plate_approach_heights:
+                for plate_z in plate_approach_heights:
 
-                candidate_target = np.array([
-                    PLATE_POSITION[0],
-                    PLATE_POSITION[1],
-                    plate_z,
-                ], dtype=float)
+                    candidate_target = np.array([
+                        PLATE_POSITION[0],
+                        PLATE_POSITION[1],
+                        plate_z,
+                    ], dtype=float)
 
-                for plate_seed in plate_seeds:
-
-                    candidate_q = self.solve_ik(
-                        candidate_target,
-                        plate_seed,
+                    self.get_logger().info(
+                        f"GREEN PLATE TEST Z={plate_z:.3f}"
                     )
 
-                    if candidate_q is None:
+                    for seed_name, plate_seed in plate_seeds:
 
-                        candidate_q = (
-                            self.solve_ik_position_only(
-                                candidate_target,
-                                plate_seed,
-                            )
+                        candidate_q = self.solve_ik_position_only(
+                            candidate_target,
+                            plate_seed,
                         )
 
-                    if candidate_q is None:
-                        continue
+                        if candidate_q is None:
+                            self.get_logger().info(
+                                f"GREEN PLATE {seed_name} "
+                                f"Z={plate_z:.3f}: IK_FAIL"
+                            )
+                            continue
 
-                    if self.configuration_in_collision(
-                        candidate_q
-                    ):
-                        continue
+                        collision = self.configuration_in_collision(
+                            candidate_q
+                        )
 
-                    plate_q = candidate_q
-                    plate_approach = candidate_target
-                    break
+                        self.get_logger().info(
+                            f"GREEN PLATE {seed_name} "
+                            f"Z={plate_z:.3f}: "
+                            f"IK_OK collision={collision}"
+                        )
 
-                if plate_q is not None:
-                    break
+                        if collision:
+                            continue
 
-            if plate_q is None:
+                        plate_q = candidate_q
+                        plate_approach = candidate_target
 
-                raise RuntimeError(
-                    "IK failure: plate approach"
-                )
+                        self.get_logger().info(
+                            f"GREEN PLATE SELECTED "
+                            f"seed={seed_name} "
+                            f"Z={plate_z:.3f}"
+                        )
+
+                        break
+
+                    if plate_q is not None:
+                        break
+
+            else:
+
+                plate_approach_heights = [
+                    PLATE_APPROACH_Z,
+                    0.22,
+                    0.20,
+                    0.18,
+                ]
+
+                plate_seeds = [
+                    current_q.copy(),
+                    HOME.copy(),
+                ]
+
+                for plate_z in plate_approach_heights:
+
+                    candidate_target = np.array([
+                        PLATE_POSITION[0],
+                        PLATE_POSITION[1],
+                        plate_z,
+                    ], dtype=float)
+
+                    for plate_seed in plate_seeds:
+
+                        candidate_q = self.solve_ik(
+                            candidate_target,
+                            plate_seed,
+                        )
+
+                        if candidate_q is None:
+                            candidate_q = (
+                                self.solve_ik_position_only(
+                                    candidate_target,
+                                    plate_seed,
+                                )
+                            )
+
+                        if candidate_q is None:
+                            continue
+
+                        if self.configuration_in_collision(
+                            candidate_q
+                        ):
+                            continue
+
+                        plate_q = candidate_q
+                        plate_approach = candidate_target
+                        break
+
+                    if plate_q is not None:
+                        break
 
             if plate_q is None:
 
@@ -2200,19 +2282,24 @@ class MotionPlanningNode(Node):
 
                 for place_seed in place_seeds:
 
-                    candidate = self.solve_ik(
-                        place_target,
-                        place_seed,
-                    )
-
-                    if candidate is None:
-
-                        candidate = (
-                            self.solve_ik_position_only(
-                                place_target,
-                                place_seed,
-                            )
+                    if self.selected_object == "C":
+                        candidate = self.solve_ik_position_only(
+                            place_target,
+                            place_seed,
                         )
+                    else:
+                        candidate = self.solve_ik(
+                            place_target,
+                            place_seed,
+                        )
+
+                        if candidate is None:
+                            candidate = (
+                                self.solve_ik_position_only(
+                                    place_target,
+                                    place_seed,
+                                )
+                            )
 
                     if candidate is None:
                         continue
