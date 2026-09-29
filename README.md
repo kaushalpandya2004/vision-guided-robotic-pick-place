@@ -82,3 +82,98 @@ The complete pipeline is:
              │      → OBSTACLE AVOIDANCE           │
              │      → PLACE → RELEASE → HOME       │
              └─────────────────────────────────────┘
+⚠️ Limitations
+
+The current implementation is a simulation prototype and has several limitations.
+
+Camera
+
+The camera is simulated rather than physically calibrated.
+
+The system therefore does not currently include:
+
+Real camera intrinsics
+Real camera extrinsics
+Lens distortion calibration
+Real depth-camera noise
+Real image noise
+Coordinate Transformation
+
+The current transformation is designed for the known simulated camera/workspace geometry.
+
+A real-world implementation would require a calibrated transformation between the camera and robot base frames.
+
+Computer Vision
+
+HSV thresholds are designed for the controlled simulated environment.
+
+Performance may change under:
+
+Different lighting
+Shadows
+Reflections
+Similar object colors
+Occlusions
+Camera noise
+Robot
+
+The current system is simulation-only.
+
+Real deployment would introduce:
+
+Servo errors
+Joint backlash
+Gear compliance
+Motor dynamics
+Sensor noise
+Calibration errors
+Communication delays
+Real collision dynamics
+Gripper
+
+The current gripper is simulated.
+
+Real grasping would require additional consideration of:
+
+Object friction
+Gripper force
+Contact dynamics
+Object geometry
+Slip detection
+Force feedback
+🚀 Future Improvements
+
+Potential extensions include:
+
+Vision
+RGB-D camera
+Depth-based localization
+Camera calibration
+YOLO-based object detection
+Robust detection under lighting changes
+Object pose estimation
+Robotics
+ROS2 TF2 integration
+MoveIt 2 integration
+Real robot deployment
+Cartesian trajectory generation
+Dynamic obstacle avoidance
+Velocity and acceleration constraints
+Motion Planning
+RRT*
+Informed RRT*
+Trajectory optimization
+Cost-based path selection
+Dynamic replanning
+Manipulation
+Automatic grasp pose generation
+Force/torque feedback
+Slip detection
+Grasp quality estimation
+Multi-object task planning
+System Integration
+Hardware-in-the-loop testing
+Real camera integration
+Real-time monitoring
+Industrial robot controller integration
+Automated experiment logging
