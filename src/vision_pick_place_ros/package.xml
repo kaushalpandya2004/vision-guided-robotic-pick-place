@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="3">
+
+  <name>vision_pick_place_ros</name>
+
+  <version>1.0.0</version>
+
+  <description>
+    ROS2 architecture for vision-guided robotic pick-and-place
+    with coordinate transformation, IK, RRT motion planning,
+    collision checking, robot control and gripper control.
+  </description>
+
+  <maintainer email="kaushal@example.com">Kaushal Pandya</maintainer>
+
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+
+</package>

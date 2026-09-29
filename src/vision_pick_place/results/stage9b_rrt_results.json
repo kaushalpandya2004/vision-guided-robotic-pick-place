@@ -1,0 +1,57 @@
+{
+  "stage": "9B",
+  "robot": "Franka Panda",
+  "planner": "Joint-space RRT",
+  "collision_checking": true,
+  "path_smoothing": true,
+  "direct_path_blocked": true,
+  "rrt_success": true,
+  "start_configuration": [
+    0.0,
+    -0.785398163,
+    0.0,
+    -2.35619449,
+    0.0,
+    1.570796327,
+    0.785398163
+  ],
+  "goal_configuration": [
+    -0.9765640763683873,
+    -0.5642474938772468,
+    -1.3082813540024296,
+    -2.4310865683954215,
+    -0.2040115362656172,
+    2.096733843590868,
+    1.6794605260240636
+  ],
+  "obstacle": {
+    "position": [
+      0.2850232422351837,
+      -0.19519229233264923,
+      0.22
+    ],
+    "half_extents": [
+      0.08,
+      0.08,
+      0.22
+    ],
+    "path_fraction": 0.25
+  },
+  "raw_path_waypoints": 17,
+  "smoothed_path_waypoints": 3,
+  "validation": {
+    "passed": true,
+    "checked_samples": 78,
+    "collision_samples": 0,
+    "minimum_obstacle_clearance_m": 0.017764132301405035
+  },
+  "execution": {
+    "maximum_segment_joint_error_rad": 6.1302698675315475e-06,
+    "final_joint_error_rad": 6.1302698675315475e-06,
+    "final_ee_position_m": [
+      -0.253053218126297,
+      -0.34791678190231323,
+      0.25000131130218506
+    ]
+  }
+}

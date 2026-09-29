@@ -1,0 +1,45 @@
+{
+  "stage": "Stage 9 - RRT Motion Planning",
+  "robot": "Franka Panda",
+  "dof": 7,
+  "planner": "Joint-space RRT",
+  "collision_checking": true,
+  "path_smoothing": true,
+  "ik_inside_rrt": false,
+  "random_seed": 42,
+  "rrt_parameters": {
+    "max_iterations": 6000,
+    "step_size_rad": 0.2,
+    "edge_resolution_rad": 0.035,
+    "goal_bias": 0.15,
+    "goal_tolerance_rad": 0.12,
+    "shortcut_attempts": 400
+  },
+  "start_configuration_rad": [
+    0.0,
+    -0.785398163,
+    0.0,
+    -2.35619449,
+    0.0,
+    1.570796327,
+    0.785398163
+  ],
+  "goal_configuration_rad": [
+    -0.9765640763683873,
+    -0.5642474938772468,
+    -1.3082813540024296,
+    -2.4310865683954215,
+    -0.2040115362656172,
+    2.096733843590868,
+    1.6794605260240636
+  ],
+  "raw_waypoints": 2,
+  "smoothed_waypoints": 2,
+  "raw_path_length_rad": 1.9589212402766216,
+  "smoothed_path_length_rad": 1.9589212402766216,
+  "planning_time_sec": 0.024787717999060987,
+  "minimum_obstacle_clearance_mm": 37.7054670087083,
+  "home_validation": "PASS",
+  "goal_validation": "PASS",
+  "path_validation": "PASS"
+}
